@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { signUpSchema, SignUpValues } from "@/lib/validation";
+import { logingSchema, LoginValues } from "@/lib/validation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -13,27 +13,26 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { signUp } from "./action";
 import { PasswordInput } from "@/components/passewordInput";
 import ButtonLoading from "@/components/buttonLoading";
+import { Login } from "./action";
 
-export default function SignUpForm() {
+export default function LoginForm() {
   const [error, setError] = useState<string>();
   const [isPending, startTransition] = useTransition();
 
-  const form = useForm<SignUpValues>({
-    resolver: zodResolver(signUpSchema),
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(logingSchema),
     defaultValues: {
-      email: "",
       username: "",
       password: "",
     },
   });
 
-  async function onSubmit(values: SignUpValues) {
+  async function onSubmit(values: LoginValues) {
     setError(undefined);
     startTransition(async () => {
-      const { error } = await signUp(values);
+      const { error } = await Login(values);
       if (error) setError(error);
     });
   }
@@ -55,18 +54,6 @@ export default function SignUpForm() {
         />
         <FormField
           control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>email</FormLabel>
-              <FormControl>
-                <Input placeholder="email" {...field} />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
           name="password"
           render={({ field }) => (
             <FormItem>
@@ -77,8 +64,12 @@ export default function SignUpForm() {
             </FormItem>
           )}
         />
-        <ButtonLoading loading={isPending} type="submit" className="w-full rounded-full">
-          Inscrire
+        <ButtonLoading
+          loading={isPending}
+          type="submit"
+          className="w-full rounded-full"
+        >
+          Connecter
         </ButtonLoading>
       </form>
     </Form>

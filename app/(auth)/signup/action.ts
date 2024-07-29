@@ -15,7 +15,7 @@ export async function signUp(
 ): Promise<{ error: string }> {
   try {
     const { username, email, password } = signUpSchema.parse(credentials);
-
+      await prisma.$connect()
     const passwordHash = await hash(password, {
       memoryCost: 19456,
       timeCost: 2,
@@ -24,7 +24,7 @@ export async function signUp(
     });
 
     const userId = generateIdFromEntropySize(10);
-
+    console.log("Generated userId:", userId);
     const existingUsername = await prisma.user.findFirst({
       where: {
         username: {
@@ -51,18 +51,16 @@ export async function signUp(
       return { error: "L'email est déjà utilisé" };
     }
 
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         id: userId,
         username,
         email,
         displayName: username,
         passwordHash,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       },
     });
-
+    console.log("User created successfully:", newUser);
     const session = await lucia.createSession(userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
     cookies().set(
@@ -73,7 +71,12 @@ export async function signUp(
     return redirect("/");
   } catch (error) {
     if (isRedirectError(error)) throw error;
-    console.log(error);
-    return { error: "Something went wrong" };
+    console.error("Detailed error:", error);
+    if (error instanceof Error) {
+      return { error: error.message };
+    }
+    return { error: "Une erreur inattendue s'est produite" };
+    
   }
+ 
 }
