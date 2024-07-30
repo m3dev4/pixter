@@ -18,6 +18,10 @@ interface DatabaseUserAttributes {
   displayName: string;
   avatarUrl: string | null;
   email: string | null;
+  passwordHash: string | null;
+  googleId: string | null;
+  bio: string | null;
+  createdAt: Date;
 }
 
 /* Étend le module lucia pour inclure une interface Register avec la configuration spécifique de votre application. */
@@ -47,8 +51,12 @@ export const lucia = new Lucia(adapter, {
       displayName: DatabaseUserAttributes.displayName,
       avatarUrl: DatabaseUserAttributes.avatarUrl,
       email: DatabaseUserAttributes.email,
+      passwordHash: DatabaseUserAttributes.passwordHash,
+      googleId: DatabaseUserAttributes.googleId,
+      bio: DatabaseUserAttributes.bio,
+      createdAt: DatabaseUserAttributes.createdAt,
     };
-  },
+  }
 });
 
 /* validateRequest : Une fonction asynchrone pour valider les sessions utilisateurs.
@@ -60,8 +68,8 @@ createBlankSessionCookie() : Crée un cookie de session vide si aucune session v
 
 export const validateRequest = cache(
   async (): Promise<
-    { user: User; session: Session } | { user: null; session: null }
-  > => {
+  { user: User; session: Session; } | { user: null; session: null; }
+> => {
     const sessionId = cookies().get(lucia.sessionCookieName)?.value ?? null;
 
     if (!sessionId) {
@@ -92,6 +100,11 @@ export const validateRequest = cache(
       }
     } catch (error) {}
 
-    return result;
+    return result as
+      | {
+          user: DatabaseUserAttributes;
+          session: Session;
+        }
+      | { user: null; session: null };
   }
 );
