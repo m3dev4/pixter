@@ -1,3 +1,4 @@
+import { Content } from '@radix-ui/react-dialog';
 import { z } from 'zod';
 
 const requiredSring = z.string().trim().min(1, 'required');
@@ -16,3 +17,7 @@ export const logingSchema = z.object({
 })
 
 export type LoginValues = z.infer<typeof logingSchema>;
+
+export const createPostSchema = z.object({
+    content: requiredSring,
+})
