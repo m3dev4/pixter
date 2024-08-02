@@ -8,9 +8,16 @@ import UserAvatar from "@/components/userAvatar";
 import { useSession } from "@/app/(main)/sessionProvider";
 import { Button } from "@/components/ui/button";
 import "./style.css";
+import { useMutation } from "@tanstack/react-query";
+import { useMutationPost } from "./mutation";
+import PostsLoading from "../postLoading";
+import ButtonLoading from "@/components/buttonLoading";
 
 export default function PostEditor() {
   const { user } = useSession();
+
+  const mutation = useMutationPost()
+
   const editor = useEditor({
     extensions: [
       Starterki.configure({
@@ -28,9 +35,12 @@ export default function PostEditor() {
       blockSeparator: "\n",
     }) || "";
 
-  async function onSubmit() {
-    await submitPost(input);
-    editor?.commands.clearContent();
+   function onSubmit() {
+     mutation.mutate(input, {
+      onSuccess: () => { 
+        editor?.commands.clearContent();   
+      }
+     })
   }
   return (
     <div className="flex flex-col gap-5 rounded-2xl bg-card shadow-sm">
@@ -42,13 +52,14 @@ export default function PostEditor() {
         />
       </div>
       <div className="flex justify-end">
-        <Button
+        <ButtonLoading
           onClick={onSubmit}
+          loading={mutation.isPending}
           disabled={!input.trim()}
           className="min-w-20"
         >
           Post
-        </Button>
+        </ButtonLoading>
       </div>
     </div>
   );
